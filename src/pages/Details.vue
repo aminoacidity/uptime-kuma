@@ -85,6 +85,9 @@
                 <span v-if="monitor.type === 'mqtt'">
                     MQTT: {{ monitor.hostname }}:{{ monitor.port }}/{{ monitor.mqttTopic }}
                 </span>
+                <span v-if="monitor.type === 'imap'">
+                    {{ monitor.imapProtocol.toUpperCase() }}: {{ monitor.hostname }}:{{ monitor.port }}
+                </span>
                 <span v-if="monitor.type === 'mysql'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
                 <span v-if="monitor.type === 'oracledb'">
                     {{
