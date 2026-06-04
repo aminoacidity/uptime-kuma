@@ -199,6 +199,11 @@ class Monitor extends BeanModel {
             jsonPathOperator: this.jsonPathOperator,
             snmpVersion: this.snmpVersion,
             smtpSecurity: this.smtpSecurity,
+            imapDeleteAfterCheck: Boolean(this.imap_delete_after_check),
+            imapMailbox: this.imap_mailbox,
+            imapProtocol: this.imap_protocol,
+            imapSearchField: this.imap_search_field,
+            imapSearchQuery: this.imap_search_query,
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
             conditions: JSON.parse(this.conditions),
             ipFamily: this.ipFamily,
@@ -248,6 +253,8 @@ class Monitor extends BeanModel {
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
                 rabbitmqUsername: this.rabbitmqUsername,
                 rabbitmqPassword: this.rabbitmqPassword,
+                imapUsername: this.imap_username,
+                imapPassword: this.imap_password,
             };
         }
 

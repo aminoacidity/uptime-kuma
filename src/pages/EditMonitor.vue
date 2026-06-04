@@ -78,6 +78,7 @@
                                             {{ $t("Globalping - Access global monitoring probes") }}
                                         </option>
                                         <option value="grpc-keyword">gRPC(s) - {{ $t("Keyword") }}</option>
+                                        <option value="imap">IMAP / POP3</option>
                                         <option value="json-query">HTTP(s) - {{ $t("Json Query") }}</option>
                                         <option value="kafka-producer">Kafka Producer</option>
                                         <option value="mqtt">MQTT</option>
@@ -485,7 +486,8 @@
                                     monitor.type === 'tailscale-ping' ||
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
-                                    monitor.type === 'sip-options'
+                                    monitor.type === 'sip-options' ||
+                                    monitor.type === 'imap'
                                 "
                                 class="my-3"
                             >
@@ -697,6 +699,7 @@
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
                                     monitor.type === 'sip-options' ||
+                                    monitor.type === 'imap' ||
                                     (monitor.type === 'globalping' &&
                                         monitor.subtype === 'ping' &&
                                         monitor.protocol === 'TCP')
@@ -715,6 +718,87 @@
                                     step="1"
                                 />
                             </div>
+
+                            <!-- IMAP / POP3 Monitor Type -->
+                            <template v-if="monitor.type === 'imap'">
+                                <div class="my-3">
+                                    <label for="imap-protocol" class="form-label">{{ $t("imapProtocol") }}</label>
+                                    <select id="imap-protocol" v-model="monitor.imapProtocol" class="form-select">
+                                        <option value="imap">IMAP</option>
+                                        <option value="imaps">IMAPS</option>
+                                        <option value="pop3">POP3</option>
+                                        <option value="pop3s">POP3S</option>
+                                    </select>
+                                </div>
+
+                                <div v-if="monitor.imapProtocol === 'imap' || monitor.imapProtocol === 'imaps'" class="my-3">
+                                    <label for="imap-mailbox" class="form-label">{{ $t("imapMailbox") }}</label>
+                                    <input
+                                        id="imap-mailbox"
+                                        v-model="monitor.imapMailbox"
+                                        type="text"
+                                        class="form-control"
+                                        :placeholder="$t('imapMailboxDefault')"
+                                    />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="imap-username" class="form-label">{{ $t("imapUsername") }}</label>
+                                    <input
+                                        id="imap-username"
+                                        v-model="monitor.imapUsername"
+                                        type="text"
+                                        class="form-control"
+                                        autocomplete="off"
+                                    />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="imap-password" class="form-label">{{ $t("imapPassword") }}</label>
+                                    <HiddenInput
+                                        id="imap-password"
+                                        v-model="monitor.imapPassword"
+                                        autocomplete="off"
+                                    />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="imap-search-field" class="form-label">{{ $t("imapSearchField") }}</label>
+                                    <select id="imap-search-field" v-model="monitor.imapSearchField" class="form-select">
+                                        <option value="subject">{{ $t("imapSearchFieldSubject") }}</option>
+                                        <option value="from">{{ $t("imapSearchFieldFrom") }}</option>
+                                        <option value="body">{{ $t("imapSearchFieldBody") }}</option>
+                                        <option value="all">{{ $t("imapSearchFieldAll") }}</option>
+                                    </select>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="imap-search-query" class="form-label">{{ $t("imapSearchQuery") }}</label>
+                                    <input
+                                        id="imap-search-query"
+                                        v-model="monitor.imapSearchQuery"
+                                        type="text"
+                                        class="form-control"
+                                        required
+                                    />
+                                </div>
+
+                                <div class="my-3 form-check">
+                                    <input
+                                        id="imap-delete-after-check"
+                                        v-model="monitor.imapDeleteAfterCheck"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        value=""
+                                    />
+                                    <label class="form-check-label" for="imap-delete-after-check">
+                                        {{ $t("imapDeleteAfterCheck") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("imapDeleteAfterCheckHelp") }}
+                                    </div>
+                                </div>
+                            </template>
 
                             <!-- Gamedig Token -->
                             <div v-if="monitor.type === 'gamedig'" class="my-3">
@@ -1648,6 +1732,7 @@
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
                                     monitor.type === 'redis' ||
+                                    monitor.type === 'imap' ||
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
@@ -3185,6 +3270,13 @@ const monitorDefaults = {
     remote_browser: null,
     screenshot_delay: 0,
     rabbitmqNodes: [],
+    imapUsername: "",
+    imapPassword: "",
+    imapProtocol: "imap",
+    imapSearchQuery: "",
+    imapSearchField: "subject",
+    imapDeleteAfterCheck: false,
+    imapMailbox: "INBOX",
     rabbitmqUsername: "",
     rabbitmqPassword: "",
     conditions: [],
@@ -3638,7 +3730,7 @@ message HealthCheckResponse {
             }
 
             // Set default port for DNS if not already defined
-            if (!this.monitor.port || this.monitor.port === "53" || this.monitor.port === "1812") {
+            if (!this.monitor.port || this.monitor.port === "53" || this.monitor.port === "1812" || this.monitor.port === "161") {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
                 } else if (this.monitor.type === "radius") {
@@ -3647,6 +3739,8 @@ message HealthCheckResponse {
                     this.monitor.port = "161";
                 } else if (this.monitor.type === "globalping" && this.monitor.subtype === "ping") {
                     this.monitor.port = "80";
+                } else if (this.monitor.type === "imap") {
+                    this.monitor.port = "143";
                 } else {
                     this.monitor.port = undefined;
                 }
@@ -3749,6 +3843,20 @@ message HealthCheckResponse {
                     this.monitor.responsecheck = "json-query";
                 } else {
                     this.monitor.responsecheck = null;
+                }
+            }
+        },
+
+        "monitor.imapProtocol"(newProtocol) {
+            if (this.monitor.type === "imap") {
+                if (newProtocol === "imap") {
+                    this.monitor.port = "143";
+                } else if (newProtocol === "imaps") {
+                    this.monitor.port = "993";
+                } else if (newProtocol === "pop3") {
+                    this.monitor.port = "110";
+                } else if (newProtocol === "pop3s") {
+                    this.monitor.port = "995";
                 }
             }
         },
@@ -3988,7 +4096,7 @@ message HealthCheckResponse {
 
             // Validate hostname field input for various monitors
             if (
-                ["dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp"].includes(
+                ["dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp", "imap"].includes(
                     this.monitor.type
                 ) &&
                 this.monitor.hostname

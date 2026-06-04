@@ -120,6 +120,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["group"] = new GroupMonitorType();
         UptimeKumaServer.monitorTypeList["snmp"] = new SNMPMonitorType();
         UptimeKumaServer.monitorTypeList["grpc-keyword"] = new GrpcKeywordMonitorType();
+        UptimeKumaServer.monitorTypeList["imap"] = new ImapMonitorType();
         UptimeKumaServer.monitorTypeList["mongodb"] = new MongodbMonitorType();
         UptimeKumaServer.monitorTypeList["rabbitmq"] = new RabbitMqMonitorType();
         UptimeKumaServer.monitorTypeList["sip-options"] = new SIPMonitorType();
@@ -572,6 +573,7 @@ const { SMTPMonitorType } = require("./monitor-types/smtp");
 const { GroupMonitorType } = require("./monitor-types/group");
 const { SNMPMonitorType } = require("./monitor-types/snmp");
 const { GrpcKeywordMonitorType } = require("./monitor-types/grpc");
+const { ImapMonitorType } = require("./monitor-types/imap");
 const { MongodbMonitorType } = require("./monitor-types/mongodb");
 const { RabbitMqMonitorType } = require("./monitor-types/rabbitmq");
 const { SIPMonitorType } = require("./monitor-types/sip-options");
